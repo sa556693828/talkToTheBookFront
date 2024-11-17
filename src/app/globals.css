@@ -19,3 +19,57 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+textarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background-color: #4B5563;
+  border-radius: 4px;
+  border: 2px solid #202123;
+}
+
+/* Firefox 滾動條樣式 */
+textarea {
+  scrollbar-width: thin;
+  scrollbar-color: #4B5563 transparent;
+}
+/* 全局滾動條樣式 */
+::-webkit-scrollbar {
+  width: 5px;  /* 細滾動條 */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #4B5563;  /* 實心灰色 */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #6B7280;  /* 懸停時顏色更深 */
+}
+
+/* Firefox 滾動條樣式 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #4B5563 transparent;
+}
+
+/* 針對深色主題 */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background-color: #4B5563;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #6B7280;
+  }
+}
