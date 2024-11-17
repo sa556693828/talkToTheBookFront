@@ -8,7 +8,8 @@ interface MongooseCache {
 
 // 定義全局類型
 declare global {
-  var mongoose: MongooseCache | undefined;
+  // eslint-disable-next-line no-var
+  var mongoose: MongooseCache | undefined; // 這裡需要使用 var
 }
 
 if (!process.env.MONGODB_URI) {
@@ -18,7 +19,7 @@ if (!process.env.MONGODB_URI) {
 const MONGODB_URI = process.env.MONGODB_URI;
 
 // 初始化緩存
-let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
   global.mongoose = cached;

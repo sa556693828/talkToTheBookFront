@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { IoLogOut } from "react-icons/io5";
 import { useAuthStore } from "@/store/useAuthStore";
 export default function Header() {
   const { logout } = useAuthStore();

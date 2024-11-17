@@ -1,16 +1,9 @@
 "use client";
 
 import { UserHistory } from "@/models/ChatHistory";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { IoLibrary } from "react-icons/io5";
 import ReactMarkdown from "react-markdown";
-
-// 定義頁面參數類型
-interface PageProps {
-  params: {
-    url: string;
-  };
-}
 
 export default function ChatComponent({
   chatLog,

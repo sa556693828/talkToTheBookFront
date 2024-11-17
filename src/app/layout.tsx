@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Link from "next/link";
-import { IoLogOut } from "react-icons/io5";
-import { useAuthStore } from "@/store/useAuthStore";
 import Header from "@/components/header";
 
 const geistSans = localFont({

@@ -5,11 +5,6 @@ import ChatComponent from "@/components/Chat";
 import { UserHistory } from "@/models/ChatHistory";
 
 // 定義頁面參數類型
-interface PageProps {
-  params: {
-    url: string;
-  };
-}
 
 export default function ChatContent({
   params,
@@ -20,7 +15,7 @@ export default function ChatContent({
   const decodedUrl = decodeURIComponent(resolvedParams.url);
   const [inputValue, setInputValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isStreaming, setIsStreaming] = useState(false);
+  const [, setIsStreaming] = useState(false);
   const [loading, setLoading] = useState(false);
   const [prompts, setPrompts] = useState<string[]>([]);
   const [chatLog, setChatLog] = useState<UserHistory[]>([]);
@@ -113,7 +108,7 @@ export default function ChatContent({
                 setPrompts((prev) => [...prev, ...promptArray]);
               }
             } catch (e) {
-              console.warn("Failed to parse line:", line);
+              console.warn("Failed to parse line:", e);
             }
           }
         }
@@ -154,12 +149,20 @@ export default function ChatContent({
 
             setPrompts((prev) => [...prev, ...promptArray]);
           }
-        } catch (e) {
-          console.warn("Failed to parse final buffer:", buffer);
+        } catch (e: unknown) {
+          if (e instanceof Error) {
+            console.warn("Failed to parse final buffer:", e.message);
+          } else {
+            console.warn("Failed to parse final buffer:", e);
+          }
         }
       }
-    } catch (error: any) {
-      console.error("Stream error:", error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Stream error:", error.message);
+      } else {
+        console.error("Unknown error:", error);
+      }
     } finally {
       setIsStreaming(false);
     }

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import ChatHistory from "@/models/ChatHistory";
-import mongoose from "mongoose";
 
 export async function GET(request: Request) {
   try {
@@ -17,7 +16,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: "獲取聊天記錄失敗" },
+      { success: false, error: "獲取聊天記錄失敗" + error },
       { status: 500 }
     );
   }
@@ -48,7 +47,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, data: chatHistory });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: "保存聊天記錄失敗" },
+      { success: false, error: "保存聊天記錄失敗" + error },
       { status: 500 }
     );
   }
