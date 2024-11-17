@@ -22,6 +22,13 @@ export default function ChatContent({
   const [currentChat, setCurrentChat] = useState<UserHistory[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isComposing, setIsComposing] = useState(false);
+  const basicPrompt = [
+    "幫我總結這本書的內容",
+    "告訴我為什麼要讀這本書",
+    "書中都用了哪些例子證明",
+    "幫我用一段話總結書中想傳達的核心觀點",
+    "我是一個上班族，我該用什麼角度去理解書中的內容",
+  ];
 
   // 自動調整高度的函數
   const adjustHeight = () => {
@@ -235,6 +242,7 @@ export default function ChatContent({
             currentChat={currentChat}
             prompts={prompts}
             handleQuery={handleStream}
+            basicPrompt={basicPrompt}
           />
         </div>
         <form
