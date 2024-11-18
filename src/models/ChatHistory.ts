@@ -27,6 +27,10 @@ const chatHistorySchema = new mongoose.Schema(
       index: true, // 添加索引以提高查詢效率
     },
     messages: [messageSchema],
+    book_link: {
+      type: String,
+      required: true,
+    },
   },
   { collection: "chat_histories" }
 );

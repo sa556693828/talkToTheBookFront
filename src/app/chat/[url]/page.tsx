@@ -3,6 +3,7 @@
 import { useEffect, use, useCallback, useState, useRef } from "react";
 import ChatComponent from "@/components/Chat";
 import { UserHistory } from "@/models/ChatHistory";
+import { useChatHistoryStore } from "@/store/chatHistoryStore";
 
 // 定義頁面參數類型
 
@@ -22,6 +23,9 @@ export default function ChatContent({
   const [currentChat, setCurrentChat] = useState<UserHistory[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isComposing, setIsComposing] = useState(false);
+  const [getChatHistory, setGetChatHistory] = useState(false);
+  const { fetchChatHistory } = useChatHistoryStore();
+
   const basicPrompt = [
     "幫我總結這本書的內容",
     "告訴我為什麼要讀這本書",
@@ -48,7 +52,6 @@ export default function ChatContent({
         env === "development"
           ? "http://54.238.1.161:9000"
           : process.env.NEXT_PUBLIC_NGROK_URL;
-      console.log(decodedUrl);
       const response = await fetch(
         `${baseUrl}/chat?message=${message}&book_link=${decodedUrl}`
       );
@@ -171,6 +174,7 @@ export default function ChatContent({
         console.error("Unknown error:", error);
       }
     } finally {
+      fetchChatHistory(localStorage.getItem("userName") || "");
       setIsStreaming(false);
     }
   }, []);
@@ -218,14 +222,26 @@ export default function ChatContent({
   };
   useEffect(() => {
     const getChatHistory = async (sessionId: string) => {
-      const response = await fetch(`/api/chat?sessionId=${sessionId}`);
-      const data = await response.json();
-      if (data.success) {
-        setChatLog(data.chatHistory.messages);
+      try {
+        setGetChatHistory(false);
+        const response = await fetch(
+          `/api/chat?sessionId=${sessionId}&book_link=${decodedUrl}`
+        );
+        const data = await response.json();
+        if (data.success) {
+          if (data.chatHistory) {
+            setChatLog(data.chatHistory.messages);
+          } else {
+            setChatLog([]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching chat history:", error);
+      } finally {
+        setGetChatHistory(true);
       }
     };
     const sessionId = localStorage.getItem("userName");
-    console.log(sessionId);
     if (sessionId) {
       getChatHistory(sessionId);
     }
@@ -235,16 +251,22 @@ export default function ChatContent({
     <div className="text-black flex-1">
       <div className="p-4 h-[calc(100vh-70px)] relative flex flex-col border-b border-black/20">
         {/* 聊天訊息區域 */}
-        <div className="flex-1 overflow-y-auto mb-4">
-          <ChatComponent
-            loading={loading}
-            chatLog={chatLog}
-            currentChat={currentChat}
-            prompts={prompts}
-            handleQuery={handleStream}
-            basicPrompt={basicPrompt}
-          />
-        </div>
+        {getChatHistory ? (
+          <div className="flex-1 overflow-y-auto mb-4">
+            <ChatComponent
+              loading={loading}
+              chatLog={chatLog}
+              currentChat={currentChat}
+              prompts={prompts}
+              handleQuery={handleStream}
+              basicPrompt={basicPrompt}
+            />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto mb-4">
+            <p>載入歷史訊息中...</p>
+          </div>
+        )}
         <form
           onSubmit={handleSubmit}
           className="flex gap-2 absolute bottom-4 w-1/2 left-1/2 -translate-x-1/2"

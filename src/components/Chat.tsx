@@ -60,7 +60,7 @@ export default function ChatComponent({
               <IoLibrary className="w-3 h-3 text-amber-700" />
             </div>
           )}
-          <div
+          <ReactMarkdown
             className={`${
               message.role === "human"
                 ? "bg-gray-800 text-[#FFECD3] p-4"
@@ -68,7 +68,7 @@ export default function ChatComponent({
             } rounded-[20px] max-w-2xl`}
           >
             {message.content}
-          </div>
+          </ReactMarkdown>
         </div>
       ))}
       {currentChat &&

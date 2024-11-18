@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GoSidebarCollapse } from "react-icons/go";
 import { GoSidebarExpand } from "react-icons/go";
 import { IoLibrary } from "react-icons/io5";
-import { RiBookmarkLine } from "react-icons/ri";
-import { RiHistoryLine } from "react-icons/ri";
+import { BiMessageDetail } from "react-icons/bi"; // 新增聊天室圖標
+import { AiOutlineDelete } from "react-icons/ai"; // 新增刪除圖標
+import { useRouter, usePathname } from "next/navigation";
+import { useChatHistoryStore } from "@/store/chatHistoryStore";
 
 export default function ChatLayout({
   children,
@@ -12,68 +14,115 @@ export default function ChatLayout({
   children: React.ReactNode;
 }>) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { chatHistory, fetchChatHistory } = useChatHistoryStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  useEffect(() => {
+    const sessionId = localStorage.getItem("userName");
+    if (sessionId) {
+      fetchChatHistory(sessionId);
+    }
+  }, [fetchChatHistory]);
+  const deleteChatHistory = async (book_link: string) => {
+    const sessionId = localStorage.getItem("userName");
+    if (sessionId) {
+      try {
+        await fetch(`/api/chat?sessionId=${sessionId}&book_link=${book_link}`, {
+          method: "DELETE",
+        });
+        const encodedUrl = encodeURIComponent(book_link);
+        if (pathname.includes(encodedUrl)) {
+          router.push("/chat");
+        }
+      } catch (error) {
+        console.error("Error deleting chat history:", error);
+      } finally {
+        fetchChatHistory(sessionId);
+      }
+    }
+  };
+
   return (
     <div className="flex" style={{ height: "calc(100vh - 70px)" }}>
       <div
-        className={`flex flex-col relative items-center h-full bg-amber-50  border-amber-200 
+        className={`flex flex-col relative h-full bg-gray-900 border-gray-700 
       transition-all duration-300 ease-in-out z-50
       ${isSidebarOpen ? "w-64 border-r" : "w-20"}`}
       >
-        {isSidebarOpen && (
-          <GoSidebarExpand
-            className="absolute top-2 right-2 w-6 h-6 text-amber-700 cursor-pointer"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          />
-        )}
-        {!isSidebarOpen && (
-          <GoSidebarCollapse
-            className="absolute top-2 left-1/2 transform -translate-x-1/2 w-6 h-6 text-amber-700 cursor-pointer"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          />
-        )}
-        {isSidebarOpen && (
-          <div className="flex flex-col h-full pt-10 items-center overflow-hidden">
-            {/* Logo 區域 */}
-            <div className="flex items-center gap-2 mb-8 p-2">
-              <IoLibrary className="w-8 h-8 text-amber-700" />
-              <span className="text-xl font-bold text-amber-900 transition-opacity duration-300">
+        {/* Sidebar Header */}
+        <div className="flex justify-between items-center p-4 border-b border-gray-700">
+          <div className="flex items-center gap-2">
+            <IoLibrary className="w-6 h-6 text-gray-300" />
+            {isSidebarOpen && (
+              <span className="text-lg font-semibold text-gray-200">
                 AI 讀書助手
               </span>
-            </div>
-
-            {/* 導航選項 */}
-            <nav className="flex-1">
-              <ul className="space-y-2">
-                <li>
-                  <button className="w-full flex items-center gap-2 p-3 rounded-lg hover:bg-amber-100 text-amber-900">
-                    <RiHistoryLine className="w-5 h-5" />
-                    <span
-                      className={`transition-opacity duration-300
-                  ${
-                    isSidebarOpen ? "opacity-100" : "opacity-0 hidden md:hidden"
-                  }`}
-                    >
-                      歷史記錄
-                    </span>
-                  </button>
-                </li>
-                <li>
-                  <button className="w-full flex items-center gap-2 p-3 rounded-lg hover:bg-amber-100 text-amber-900">
-                    <RiBookmarkLine className="w-5 h-5" />
-                    <span
-                      className={`transition-opacity duration-300
-                  ${
-                    isSidebarOpen ? "opacity-100" : "opacity-0 hidden md:hidden"
-                  }`}
-                    >
-                      我的收藏
-                    </span>
-                  </button>
-                </li>
-              </ul>
-            </nav>
+            )}
           </div>
-        )}
+          {isSidebarOpen ? (
+            <GoSidebarCollapse
+              className="w-5 h-5 text-gray-400 hover:text-gray-200 cursor-pointer"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          ) : (
+            <GoSidebarExpand
+              className="w-5 h-5 text-gray-400 hover:text-gray-200 cursor-pointer"
+              onClick={() => setIsSidebarOpen(true)}
+            />
+          )}
+        </div>
+
+        {/* New Chat Button */}
+        <button
+          className="flex items-center gap-2 m-4 p-3 rounded-lg 
+        border border-gray-700 text-gray-300
+        hover:bg-gray-800 hover:text-gray-200 transition-colors"
+          onClick={() => {
+            router.push("/chat");
+          }}
+        >
+          <BiMessageDetail className="w-5 h-5" />
+          {isSidebarOpen && <span>新對話</span>}
+        </button>
+
+        {/* Chat History List */}
+        <div className="flex-1 overflow-y-auto">
+          {chatHistory.map((chat) => (
+            <div
+              key={chat._id}
+              className="relative flex items-center justify-start gap-2 mx-2 "
+            >
+              {isSidebarOpen && (
+                <button
+                  className="opacity-20 group-hover:opacity-100 p-1 
+                hover:bg-gray-700 rounded transition-opacity"
+                  onClick={() => {
+                    deleteChatHistory(chat.book_link);
+                  }}
+                >
+                  <AiOutlineDelete className="w-4 h-4" />
+                </button>
+              )}
+              <div
+                className="flex flex-1 items-center justify-between p-3 rounded-lg
+            text-gray-300 hover:bg-gray-800 cursor-pointer group"
+                onClick={() => {
+                  const encodedUrl = encodeURIComponent(chat.book_link);
+                  router.push(`/chat/${encodedUrl}`);
+                }}
+              >
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <BiMessageDetail className="w-5 h-5 flex-shrink-0" />
+                  {isSidebarOpen && (
+                    <span className="truncate text-sm">
+                      {chat.book_link.split("products/")[1].split(".html")[0]}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       {children}
     </div>

@@ -49,7 +49,7 @@ export default function ChatPage() {
             onChange={(e) => setUrl(e.target.value)}
             disabled={isLoading}
             className="flex-1 p-4 border rounded-lg text-black border-amber-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base"
-            placeholder="https://..."
+            placeholder="https://www.taaze.tw/products/..."
             style={{ fontFamily: '"Noto Sans TC", sans-serif' }}
           />
           <button
