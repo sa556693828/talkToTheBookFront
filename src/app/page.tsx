@@ -11,14 +11,14 @@ export default function Home() {
   const { login, isAuthenticated, user, logout, isLoading } = useAuthStore();
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = login(username, password);
-      console.log(result);
-      // if (result) {
-      //   router.push("/chat");
-      // }
+      const isOk = await login(username, password);
+      console.log(isOk);
+      if (isOk) {
+        router.push("/chat");
+      }
     } catch (error) {
       console.error(error);
     }
@@ -26,11 +26,10 @@ export default function Home() {
 
   useEffect(() => {
     const userName = localStorage.getItem("userName");
-    console.log(userName);
     if (userName) {
       router.push("/chat");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   return (
     <div>

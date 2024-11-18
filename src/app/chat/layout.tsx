@@ -19,10 +19,13 @@ export default function ChatLayout({
   const pathname = usePathname();
   useEffect(() => {
     const sessionId = localStorage.getItem("userName");
-    if (sessionId) {
-      fetchChatHistory(sessionId);
+    if (!sessionId) {
+      router.push("/"); // 導向登入頁面
+      return;
     }
+    fetchChatHistory(sessionId);
   }, [fetchChatHistory]);
+
   const deleteChatHistory = async (book_link: string) => {
     const sessionId = localStorage.getItem("userName");
     if (sessionId) {
@@ -41,7 +44,9 @@ export default function ChatLayout({
       }
     }
   };
-
+  if (!localStorage.getItem("userName")) {
+    return null;
+  }
   return (
     <div className="flex" style={{ height: "calc(100vh - 70px)" }}>
       <div

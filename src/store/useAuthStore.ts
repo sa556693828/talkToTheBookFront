@@ -4,7 +4,7 @@ interface AuthState {
   isAuthenticated: boolean;
   user: string | null;
   isLoading: boolean;
-  login: (username: string, password: string) => void;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -12,17 +12,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   user: null,
   isLoading: false,
-  login: (username: string, password: string) => {
+  login: async (username: string, password: string) => {
     set({ isLoading: true });
-    // 模擬 API 請求延遲
-    setTimeout(() => {
-      if (username === password) {
-        set({ isAuthenticated: true, user: username, isLoading: false });
-        localStorage.setItem("userName", username);
-      } else {
-        set({ isLoading: false });
-      }
-    }, 1500);
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (username === password) {
+          set({ isAuthenticated: true, user: username, isLoading: false });
+          localStorage.setItem("userName", username);
+          resolve(true);
+        } else {
+          set({ isLoading: false });
+          resolve(false);
+        }
+      }, 1500);
+    });
   },
   logout: () => {
     set({ isAuthenticated: false, user: null });
