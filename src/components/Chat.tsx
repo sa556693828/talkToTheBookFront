@@ -34,21 +34,20 @@ export default function ChatComponent({
       ref={chatContainerRef}
       className="flex flex-col justify-start h-full pt-4 pb-20 px-2 gap-10 overflow-y-auto overflow-x-hidden scrollbar-hide"
     >
-      {chatLog.length === 0 ||
-        (currentChat === undefined && (
-          <div className="flex px-4 gap-2 flex-col items-start justify-around ">
-            <p className="text-sm text-gray-500">你可以從這些問題開始</p>
-            {basicPrompt.map((prompt, index) => (
-              <div
-                key={index}
-                className="rounded-lg w-full h-fit border border-amber-700 p-2 hover:bg-amber-700 hover:text-white transition-colors duration-300 cursor-pointer"
-                onClick={() => handleQuery(prompt)}
-              >
-                {prompt}
-              </div>
-            ))}
-          </div>
-        ))}
+      {chatLog.length === 0 && (
+        <div className="flex px-4 gap-2 flex-col items-start justify-around ">
+          <p className="text-sm text-gray-500">你可以從這些問題開始</p>
+          {basicPrompt.map((prompt, index) => (
+            <div
+              key={index}
+              className="rounded-lg w-full h-fit border border-amber-700 p-2 hover:bg-amber-700 hover:text-white transition-colors duration-300 cursor-pointer"
+              onClick={() => handleQuery(prompt)}
+            >
+              {prompt}
+            </div>
+          ))}
+        </div>
+      )}
       {chatLog.map((message: UserHistory, index: number) => (
         <div
           key={index}

@@ -48,7 +48,7 @@ export default function ChatContent({
         env === "development"
           ? "http://54.238.1.161:9000"
           : process.env.NEXT_PUBLIC_NGROK_URL;
-
+      console.log(decodedUrl);
       const response = await fetch(
         `${baseUrl}/chat?message=${message}&book_link=${decodedUrl}`
       );
