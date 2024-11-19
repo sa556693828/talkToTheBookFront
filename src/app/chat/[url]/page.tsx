@@ -44,6 +44,11 @@ export default function ChatContent({
   };
   const handleStream = useCallback(async (message: string) => {
     setLoading(true);
+    const userName = localStorage.getItem("userName");
+    if (!userName) {
+      console.error("User name is not set");
+      return;
+    }
     try {
       setCurrentChat((prev) => [...prev, { role: "human", content: message }]);
       setPrompts([]);
@@ -53,7 +58,7 @@ export default function ChatContent({
           ? "http://54.238.1.161:9000"
           : process.env.NEXT_PUBLIC_NGROK_URL;
       const response = await fetch(
-        `${baseUrl}/chat?message=${message}&book_link=${decodedUrl}`
+        `${baseUrl}/chat?user_id=${userName}&message=${message}&book_link=${decodedUrl}`
       );
 
       // 檢查響應狀態
