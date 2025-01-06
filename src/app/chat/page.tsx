@@ -14,8 +14,14 @@ export default function ChatPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // 簡單的URL驗證
-    if (!url) return;
+    // 驗證URL格式
+    const taazeUrlPattern = /^https:\/\/www\.taaze\.tw\/products\//;
+    if (!url || !taazeUrlPattern.test(url)) {
+      alert("請輸入有效的TAAZE商品連結");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const encodedUrl = encodeURIComponent(url);
       router.push(`/chat/${encodedUrl}`);
@@ -48,6 +54,7 @@ export default function ChatPage() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             disabled={isLoading}
+            pattern="https://www\.taaze\.tw/products/.*"
             className="flex-1 p-4 border rounded-lg text-black border-amber-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base"
             placeholder="https://www.taaze.tw/products/..."
             style={{ fontFamily: '"Noto Sans TC", sans-serif' }}
