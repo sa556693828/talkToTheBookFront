@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useState } from "react";
 import { useModelStore } from "@/store/useModel";
 import { usePathname } from "next/navigation";
 

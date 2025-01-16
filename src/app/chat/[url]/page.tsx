@@ -110,6 +110,7 @@ export default function ChatContent({
             const jsonData = JSON.parse(decodedValue);
             console.log("Parsed JSON:", jsonData);
           } catch (e) {
+            console.log(e);
             console.warn("Failed to parse as JSON:", decodedValue);
           }
 
