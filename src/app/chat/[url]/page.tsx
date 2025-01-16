@@ -4,7 +4,6 @@ import { useEffect, use, useCallback, useState, useRef } from "react";
 import ChatComponent from "@/components/Chat";
 import { UserHistory } from "@/models/ChatHistory";
 import { useChatHistoryStore } from "@/store/chatHistoryStore";
-import { useModelStore } from "@/store/useModel";
 
 // 定義頁面參數類型
 
@@ -26,7 +25,6 @@ export default function ChatContent({
   const [isComposing, setIsComposing] = useState(false);
   const [getChatHistory, setGetChatHistory] = useState(false);
   const { fetchChatHistory } = useChatHistoryStore();
-  const { isDeepSeek } = useModelStore();
 
   const basicPrompt = [
     "幫我總結這本書的內容",
@@ -44,149 +42,168 @@ export default function ChatContent({
       textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     }
   };
-  const handleStream = useCallback(async (message: string) => {
-    setLoading(true);
-    const userName = localStorage.getItem("userName");
-    if (!userName) {
-      console.error("User name is not set");
-      return;
-    }
-    try {
-      setCurrentChat((prev) => [...prev, { role: "human", content: message }]);
-      setPrompts([]);
-      const env = process.env.NODE_ENV;
-      const baseUrl =
-        env === "development"
-          ? process.env.NEXT_PUBLIC_DEVELOPMENT_URL
-          : process.env.NEXT_PUBLIC_PRODUCTION_URL;
-      const route = isDeepSeek ? "dschat" : "chat";
-
-      const response = await fetch(
-        `${baseUrl}/${route}?user_id=${userName}&message=${message}&book_link=${decodedUrl}`
-      );
-
-      // 檢查響應狀態
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  const handleStream = useCallback(
+    async (message: string) => {
+      setLoading(true);
+      const userName = localStorage.getItem("userName");
+      if (!userName) {
+        console.error("User name is not set");
+        return;
       }
-      // 檢查 response.body 是否為空
-      if (!response.body) {
-        throw new Error("Response body is null");
-      }
-      setIsStreaming(true);
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      setLoading(false);
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
+      try {
+        setCurrentChat((prev) => [
+          ...prev,
+          { role: "human", content: message },
+        ]);
+        setPrompts([]);
 
-        // 將新的chunk添加到buffer中
-        buffer += decoder.decode(value, { stream: true });
+        console.log("Sending request to:", "https://api.fluxmind.xyz/dschat");
+        console.log("Request payload:", {
+          message,
+          book_link: decodedUrl,
+          user_id: userName,
+        });
 
-        // 嘗試按行分割並解析
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || ""; // 保存最後一個不完整的行
+        const response = await fetch("https://api.fluxmind.xyz/dschat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "text/event-stream",
+          },
+          body: JSON.stringify({
+            message: message,
+            book_link: decodedUrl,
+            user_id: userName,
+          }),
+        });
 
-        // 處理每一行數據
-        for (const line of lines) {
-          if (line.trim()) {
-            // 忽略空行
-            try {
-              const parsedData = JSON.parse(line);
-              if (parsedData.content) {
-                setCurrentChat((prev) => {
-                  const lastMessage = prev[prev.length - 1];
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("API Error:", {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText,
+          });
+          throw new Error(
+            `HTTP error! status: ${response.status}, message: ${errorText}`
+          );
+        }
 
-                  // 如果最後一條消息是AI的回應，則更新其內容
-                  if (lastMessage && lastMessage.role === "ai") {
-                    const updatedChat = [...prev];
-                    updatedChat[updatedChat.length - 1] = {
-                      role: "ai",
-                      content: lastMessage.content + parsedData.content,
-                    };
-                    return updatedChat;
-                  }
+        if (!response.body) {
+          throw new Error("Response body is null");
+        }
 
-                  return [
-                    ...prev,
-                    {
-                      role: "ai",
-                      content: parsedData.content,
-                    },
-                  ];
-                });
+        setIsStreaming(true);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        setLoading(false);
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          const decodedValue = decoder.decode(value);
+          console.log("Received chunk:", decodedValue);
+
+          try {
+            const jsonData = JSON.parse(decodedValue);
+            console.log("Parsed JSON:", jsonData);
+          } catch (e) {
+            console.warn("Failed to parse as JSON:", decodedValue);
+          }
+
+          buffer += decoder.decode(value, { stream: true });
+
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.trim()) {
+              try {
+                const parsedData = JSON.parse(line);
+                if (parsedData.content) {
+                  setCurrentChat((prev) => {
+                    const lastMessage = prev[prev.length - 1];
+
+                    if (lastMessage && lastMessage.role === "assistant") {
+                      const updatedChat = [...prev];
+                      updatedChat[updatedChat.length - 1] = {
+                        role: "assistant",
+                        content: lastMessage.content + parsedData.content,
+                      };
+                      return updatedChat;
+                    }
+
+                    return [
+                      ...prev,
+                      {
+                        role: "assistant",
+                        content: parsedData.content,
+                      },
+                    ];
+                  });
+                }
+                if (parsedData.prompt) {
+                  const promptArray = parsedData.prompt
+                    .split(/\d+\.\s*/)
+                    .filter((item: string) => item.trim())
+                    .map((item: string) => item.replace(/\s+/g, " ").trim());
+
+                  setPrompts((prev) => [...prev, ...promptArray]);
+                }
+              } catch (e) {
+                console.warn("Failed to parse line:", e);
               }
-              if (parsedData.prompt) {
-                const promptArray = parsedData.prompt
-                  .split(/\d+\.\s*/) // 用數字加點分割
-                  .filter((item: string) => item.trim()) // 過濾空字串
-                  .map((item: string) => item.replace(/\s+/g, " ").trim()); // 處理多餘空白
-
-                setPrompts((prev) => [...prev, ...promptArray]);
-              }
-            } catch (e) {
-              console.warn("Failed to parse line:", e);
             }
           }
         }
-      }
 
-      // 處理最後剩餘的buffer
-      if (buffer.trim()) {
-        try {
-          const parsedData = JSON.parse(buffer);
-          if (parsedData.content) {
-            setCurrentChat((prev) => {
-              const lastMessage = prev[prev.length - 1];
+        if (buffer.trim()) {
+          try {
+            const parsedData = JSON.parse(buffer);
+            if (parsedData.content) {
+              setCurrentChat((prev) => {
+                const lastMessage = prev[prev.length - 1];
+                if (lastMessage && lastMessage.role === "assistant") {
+                  const updatedChat = [...prev];
+                  updatedChat[updatedChat.length - 1] = {
+                    role: "assistant",
+                    content: lastMessage.content + parsedData.content,
+                  };
+                  return updatedChat;
+                }
+                return [
+                  ...prev,
+                  {
+                    role: "assistant",
+                    content: parsedData.content,
+                  },
+                ];
+              });
+            }
+            if (parsedData.prompt) {
+              const promptArray = parsedData.prompt
+                .split(/\d+\.\s*/)
+                .filter((item: string) => item.trim())
+                .map((item: string) => item.replace(/\s+/g, " ").trim());
 
-              // 如果最後一條消息是AI的回應，則更新其內容
-              if (lastMessage && lastMessage.role === "ai") {
-                const updatedChat = [...prev];
-                updatedChat[updatedChat.length - 1] = {
-                  role: "ai",
-                  content: lastMessage.content + parsedData.content,
-                };
-                return updatedChat;
-              }
-
-              return [
-                ...prev,
-                {
-                  role: "ai",
-                  content: parsedData.content,
-                },
-              ];
-            });
-          }
-          if (parsedData.prompt) {
-            const promptArray = parsedData.prompt
-              .split(/\d+\.\s*/) // 用數字加點分割
-              .filter((item: string) => item.trim()) // 過濾空字串
-              .map((item: string) => item.replace(/\s+/g, " ").trim()); // 處理多餘空白
-
-            setPrompts((prev) => [...prev, ...promptArray]);
-          }
-        } catch (e: unknown) {
-          if (e instanceof Error) {
-            console.warn("Failed to parse final buffer:", e.message);
-          } else {
+              setPrompts((prev) => [...prev, ...promptArray]);
+            }
+          } catch (e) {
             console.warn("Failed to parse final buffer:", e);
           }
         }
+      } catch (error) {
+        console.error("Stream error:", error);
+        throw error;
+      } finally {
+        fetchChatHistory(userName);
+        setIsStreaming(false);
       }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Stream error:", error.message);
-      } else {
-        console.error("Unknown error:", error);
-      }
-    } finally {
-      fetchChatHistory(localStorage.getItem("userName") || "");
-      setIsStreaming(false);
-    }
-  }, []);
+    },
+    [decodedUrl, fetchChatHistory]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,7 +220,6 @@ export default function ChatContent({
   };
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
-      // 如果正在輸入中文，直接返回
       if (isComposing) {
         return;
       }
@@ -221,7 +237,6 @@ export default function ChatContent({
     }
   };
 
-  // 添加輸入法事件處理
   const handleCompositionStart = () => {
     setIsComposing(true);
   };
@@ -259,7 +274,6 @@ export default function ChatContent({
   return (
     <div className="text-black flex-1">
       <div className="p-4 h-[calc(100vh-70px)] relative flex flex-col border-b border-black/20">
-        {/* 聊天訊息區域 */}
         {getChatHistory ? (
           <div className="flex-1 overflow-y-auto mb-4">
             <ChatComponent
