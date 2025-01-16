@@ -4,6 +4,7 @@ import { useEffect, use, useCallback, useState, useRef } from "react";
 import ChatComponent from "@/components/Chat";
 import { UserHistory } from "@/models/ChatHistory";
 import { useChatHistoryStore } from "@/store/chatHistoryStore";
+import { useModelStore } from "@/store/useModel";
 
 // 定義頁面參數類型
 
@@ -25,6 +26,7 @@ export default function ChatContent({
   const [isComposing, setIsComposing] = useState(false);
   const [getChatHistory, setGetChatHistory] = useState(false);
   const { fetchChatHistory } = useChatHistoryStore();
+  const { isDeepSeek } = useModelStore();
 
   const basicPrompt = [
     "幫我總結這本書的內容",
@@ -55,10 +57,12 @@ export default function ChatContent({
       const env = process.env.NODE_ENV;
       const baseUrl =
         env === "development"
-          ? "http://54.238.1.161:9000"
-          : process.env.NEXT_PUBLIC_NGROK_URL;
+          ? process.env.NEXT_PUBLIC_DEVELOPMENT_URL
+          : process.env.NEXT_PUBLIC_PRODUCTION_URL;
+      const route = isDeepSeek ? "dschat" : "chat";
+
       const response = await fetch(
-        `${baseUrl}/chat?user_id=${userName}&message=${message}&book_link=${decodedUrl}`
+        `${baseUrl}/${route}?user_id=${userName}&message=${message}&book_link=${decodedUrl}`
       );
 
       // 檢查響應狀態
