@@ -4,6 +4,7 @@ import { useEffect, use, useCallback, useState, useRef } from "react";
 import ChatComponent from "@/components/Chat";
 import { UserHistory } from "@/models/ChatHistory";
 import { useChatHistoryStore } from "@/store/chatHistoryStore";
+import { useModelStore } from "@/store/useModel";
 
 // 定義頁面參數類型
 
@@ -25,6 +26,7 @@ export default function ChatContent({
   const [isComposing, setIsComposing] = useState(false);
   const [getChatHistory, setGetChatHistory] = useState(false);
   const { fetchChatHistory } = useChatHistoryStore();
+  const { isDeepSeek } = useModelStore();
 
   const basicPrompt = [
     "幫我總結這本書的內容",
@@ -50,6 +52,7 @@ export default function ChatContent({
         console.error("User name is not set");
         return;
       }
+
       try {
         setCurrentChat((prev) => [
           ...prev,
@@ -57,14 +60,21 @@ export default function ChatContent({
         ]);
         setPrompts([]);
 
-        console.log("Sending request to:", "https://api.fluxmind.xyz/dschat");
-        console.log("Request payload:", {
-          message,
-          book_link: decodedUrl,
-          user_id: userName,
-        });
+        // 根據環境決定基礎 URL
+        const env = process.env.NODE_ENV;
+        const baseUrl =
+          env === "development"
+            ? process.env.NEXT_PUBLIC_DEVELOPMENT_URL
+            : process.env.NEXT_PUBLIC_PRODUCTION_URL;
 
-        const response = await fetch("https://api.fluxmind.xyz/dschat", {
+        // 使用 component 的 isDeepSeek state 來決定 API 路徑
+        const apiPath = isDeepSeek ? "/dschat" : "/chat";
+        const apiUrl = `${baseUrl}${apiPath}`;
+
+        console.log("Using API URL:", apiUrl);
+        console.log("Is DeepSeek enabled:", isDeepSeek);
+
+        const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -203,7 +213,7 @@ export default function ChatContent({
         setIsStreaming(false);
       }
     },
-    [decodedUrl, fetchChatHistory]
+    [decodedUrl, fetchChatHistory, isDeepSeek]
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -271,6 +281,10 @@ export default function ChatContent({
       getChatHistory(sessionId);
     }
   }, [decodedUrl]);
+
+  useEffect(() => {
+    console.log("Current isDeepSeek value:", isDeepSeek);
+  }, [isDeepSeek]);
 
   return (
     <div className="text-black flex-1">
