@@ -26,7 +26,7 @@ export default function ChatContent({
   const [getChatHistory, setGetChatHistory] = useState(false);
   const { fetchChatHistory } = useChatHistoryStore();
   // const { isDeepSeek } = useModelStore();
-  const isDeepSeek = false;
+  const isDeepSeek = true;
 
   const basicPrompt = [
     "幫我總結這本書的內容",

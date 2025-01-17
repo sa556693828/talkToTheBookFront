@@ -24,6 +24,17 @@ export default function ChatLayout({
     }
   }, [router]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sessionId = localStorage.getItem("userName");
+      if (!sessionId) {
+        router.push("/"); // 導向登入頁面
+        return;
+      }
+      fetchChatHistory(sessionId);
+    }
+  }, [fetchChatHistory, router]);
+
   const deleteChatHistory = async (book_link: string) => {
     const sessionId = localStorage.getItem("userName");
     if (sessionId) {
@@ -109,7 +120,7 @@ export default function ChatLayout({
             text-gray-300 hover:bg-gray-800 cursor-pointer group"
                 onClick={() => {
                   const encodedUrl = encodeURIComponent(chat.book_link);
-                  router.push(`/chat/${encodedUrl}`);
+                  router.push(`/chat_ds/${encodedUrl}`);
                 }}
               >
                 <div className="flex items-center gap-2 overflow-hidden">
