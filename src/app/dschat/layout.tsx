@@ -93,7 +93,7 @@ export default function ChatLayout({
         border border-gray-700 text-gray-300
         hover:bg-gray-800 hover:text-gray-200 transition-colors"
           onClick={() => {
-            router.push("/chat");
+            router.push("/dschat");
           }}
         >
           <BiMessageDetail className="w-5 h-5" />
