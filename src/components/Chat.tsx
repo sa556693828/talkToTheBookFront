@@ -60,30 +60,11 @@ export default function ChatComponent({
               <IoLibrary className="w-3 h-3 text-amber-700" />
             </div>
           )}
-          <ReactMarkdown
-            className={`${
-              message.role === "human"
-                ? "bg-gray-800 text-[#FFECD3] p-4"
-                : "text-[#1E1E1E]"
-            } rounded-[20px] max-w-2xl`}
-          >
-            {message.content}
-          </ReactMarkdown>
-        </div>
-      ))}
-      {currentChat &&
-        currentChat.map((message: UserHistory, index: number) => (
           <div
-            key={index}
-            className={`flex ${
-              message.role === "human" ? "justify-end" : "justify-start"
+            className={`flex flex-col gap-6 ${
+              message.role === "ai" && "flex-1"
             }`}
           >
-            {message.role === "ai" && (
-              <div className="flex rounded-full border border-amber-700 size-fit p-2 gap-2 mr-4">
-                <IoLibrary className="w-3 h-3 text-amber-700" />
-              </div>
-            )}
             <ReactMarkdown
               className={`${
                 message.role === "human"
@@ -93,25 +74,70 @@ export default function ChatComponent({
             >
               {message.content}
             </ReactMarkdown>
+            {currentChat?.length === 0 && index === chatLog.length - 1 && (
+              <div className="flex gap-2 flex-col items-start justify-around">
+                <p className="text-sm text-gray-500">你可以這麼問</p>
+                {message.prompt?.split("\n").map((prompt, index) => (
+                  <div
+                    key={index}
+                    className="rounded-lg w-full h-fit border border-amber-700 p-2 hover:bg-amber-700 hover:text-white transition-colors duration-300 cursor-pointer"
+                    onClick={() => handleQuery(prompt)}
+                  >
+                    {prompt}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+      {currentChat &&
+        currentChat.map((message: UserHistory, index: number) => (
+          <div
+            key={index}
+            className={`flex gap-4 ${
+              message.role === "human" ? "justify-end" : "justify-start"
+            }`}
+          >
+            {message.role === "ai" && (
+              <div className="flex rounded-full border border-amber-700 size-fit p-2 gap-2 mr-4">
+                <IoLibrary className="w-3 h-3 text-amber-700" />
+              </div>
+            )}
+            <div
+              className={`flex flex-col gap-6 ${
+                message.role === "ai" && "flex-1"
+              }`}
+            >
+              <ReactMarkdown
+                className={`${
+                  message.role === "human"
+                    ? "bg-gray-800 text-[#FFECD3] p-4"
+                    : "text-[#1E1E1E]"
+                } rounded-[20px] max-w-2xl`}
+              >
+                {message.content}
+              </ReactMarkdown>
+              {index === currentChat.length - 1 && message.prompt && (
+                <div className="flex gap-2 flex-col items-start justify-around">
+                  <p className="text-sm text-gray-500">你可以這麼問</p>
+                  {message.prompt?.split("\n").map((prompt, index) => (
+                    <div
+                      key={index}
+                      className="rounded-lg w-full h-fit border border-amber-700 p-2 hover:bg-amber-700 hover:text-white transition-colors duration-300 cursor-pointer"
+                      onClick={() => handleQuery(prompt)}
+                    >
+                      {prompt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         ))}
       {loading && (
         <div className="flex justify-start w-full">
           <iframe src="https://lottie.host/embed/1761150a-2d15-43c9-aa56-0bb9c9add5d7/mcQjQQ2npP.json"></iframe>
-        </div>
-      )}
-      {prompts && prompts.length > 0 && (
-        <div className="flex px-4 gap-2 flex-col items-start justify-around ">
-          <p className="text-sm text-gray-500">你可以這麼問</p>
-          {prompts.map((prompt, index) => (
-            <div
-              key={index}
-              className="rounded-lg w-full h-fit border border-amber-700 p-2 hover:bg-amber-700 hover:text-white transition-colors duration-300 cursor-pointer"
-              onClick={() => handleQuery(prompt)}
-            >
-              {prompt}
-            </div>
-          ))}
         </div>
       )}
     </div>

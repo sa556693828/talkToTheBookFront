@@ -121,10 +121,10 @@ export default function ChatContent({
                   setCurrentChat((prev) => {
                     const lastMessage = prev[prev.length - 1];
 
-                    if (lastMessage && lastMessage.role === "assistant") {
+                    if (lastMessage && lastMessage.role === "ai") {
                       const updatedChat = [...prev];
                       updatedChat[updatedChat.length - 1] = {
-                        role: "assistant",
+                        role: "ai",
                         content: lastMessage.content + parsedData.content,
                       };
                       return updatedChat;
@@ -133,7 +133,7 @@ export default function ChatContent({
                     return [
                       ...prev,
                       {
-                        role: "assistant",
+                        role: "ai",
                         content: parsedData.content,
                       },
                     ];
@@ -160,10 +160,10 @@ export default function ChatContent({
             if (parsedData.content) {
               setCurrentChat((prev) => {
                 const lastMessage = prev[prev.length - 1];
-                if (lastMessage && lastMessage.role === "assistant") {
+                if (lastMessage && lastMessage.role === "ai") {
                   const updatedChat = [...prev];
                   updatedChat[updatedChat.length - 1] = {
-                    role: "assistant",
+                    role: "ai",
                     content: lastMessage.content + parsedData.content,
                   };
                   return updatedChat;
@@ -171,7 +171,7 @@ export default function ChatContent({
                 return [
                   ...prev,
                   {
-                    role: "assistant",
+                    role: "ai",
                     content: parsedData.content,
                   },
                 ];

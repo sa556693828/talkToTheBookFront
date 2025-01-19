@@ -18,7 +18,6 @@ export default function ChatContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [, setIsStreaming] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [prompts, setPrompts] = useState<string[]>([]);
   const [chatLog, setChatLog] = useState<UserHistory[]>([]);
   const [currentChat, setCurrentChat] = useState<UserHistory[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -58,7 +57,6 @@ export default function ChatContent({
           ...prev,
           { role: "human", content: message },
         ]);
-        setPrompts([]);
 
         // 根據環境決定基礎 URL
         const env = process.env.NODE_ENV;
@@ -126,10 +124,10 @@ export default function ChatContent({
                   setCurrentChat((prev) => {
                     const lastMessage = prev[prev.length - 1];
 
-                    if (lastMessage && lastMessage.role === "assistant") {
+                    if (lastMessage && lastMessage.role === "ai") {
                       const updatedChat = [...prev];
                       updatedChat[updatedChat.length - 1] = {
-                        role: "assistant",
+                        role: "ai",
                         content: lastMessage.content + parsedData.content,
                       };
                       return updatedChat;
@@ -138,19 +136,34 @@ export default function ChatContent({
                     return [
                       ...prev,
                       {
-                        role: "assistant",
+                        role: "ai",
                         content: parsedData.content,
                       },
                     ];
                   });
                 }
                 if (parsedData.prompt) {
-                  const promptArray = parsedData.prompt
-                    .split(/\d+\.\s*/)
-                    .filter((item: string) => item.trim())
-                    .map((item: string) => item.replace(/\s+/g, " ").trim());
-
-                  setPrompts((prev) => [...prev, ...promptArray]);
+                  setCurrentChat((prev) => {
+                    const lastMessage = prev?.[prev.length - 1];
+                    // 如果最後一條消息是AI的回應，則更新其內容
+                    if (lastMessage && lastMessage.role === "ai") {
+                      const updatedChat = [...prev];
+                      updatedChat[updatedChat.length - 1] = {
+                        role: "ai",
+                        content: lastMessage.content,
+                        prompt: parsedData.prompt,
+                      };
+                      return updatedChat;
+                    }
+                    return [
+                      ...(prev || []),
+                      {
+                        role: "ai",
+                        content: parsedData.content,
+                        prompt: parsedData.prompt,
+                      },
+                    ];
+                  });
                 }
               } catch (e) {
                 console.warn("Failed to parse line:", e);
@@ -165,10 +178,10 @@ export default function ChatContent({
             if (parsedData.content) {
               setCurrentChat((prev) => {
                 const lastMessage = prev[prev.length - 1];
-                if (lastMessage && lastMessage.role === "assistant") {
+                if (lastMessage && lastMessage.role === "ai") {
                   const updatedChat = [...prev];
                   updatedChat[updatedChat.length - 1] = {
-                    role: "assistant",
+                    role: "ai",
                     content: lastMessage.content + parsedData.content,
                   };
                   return updatedChat;
@@ -176,19 +189,34 @@ export default function ChatContent({
                 return [
                   ...prev,
                   {
-                    role: "assistant",
+                    role: "ai",
                     content: parsedData.content,
                   },
                 ];
               });
             }
             if (parsedData.prompt) {
-              const promptArray = parsedData.prompt
-                .split(/\d+\.\s*/)
-                .filter((item: string) => item.trim())
-                .map((item: string) => item.replace(/\s+/g, " ").trim());
-
-              setPrompts((prev) => [...prev, ...promptArray]);
+              setCurrentChat((prev) => {
+                const lastMessage = prev?.[prev.length - 1];
+                // 如果最後一條消息是AI的回應，則更新其內容
+                if (lastMessage && lastMessage.role === "ai") {
+                  const updatedChat = [...prev];
+                  updatedChat[updatedChat.length - 1] = {
+                    role: "ai",
+                    content: lastMessage.content,
+                    prompt: parsedData.prompt,
+                  };
+                  return updatedChat;
+                }
+                return [
+                  ...(prev || []),
+                  {
+                    role: "ai",
+                    content: parsedData.content,
+                    prompt: parsedData.prompt,
+                  },
+                ];
+              });
             }
           } catch (e) {
             console.warn("Failed to parse final buffer:", e);
@@ -280,7 +308,6 @@ export default function ChatContent({
               loading={loading}
               chatLog={chatLog}
               currentChat={currentChat}
-              prompts={prompts}
               handleQuery={handleStream}
               basicPrompt={basicPrompt}
             />
