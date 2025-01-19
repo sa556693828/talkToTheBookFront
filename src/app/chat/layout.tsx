@@ -24,6 +24,17 @@ export default function ChatLayout({
     }
   }, [router]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sessionId = localStorage.getItem("userName");
+      if (!sessionId) {
+        router.push("/"); // 導向登入頁面
+        return;
+      }
+      fetchChatHistory(sessionId, "chat");
+    }
+  }, [fetchChatHistory, router]);
+
   const deleteChatHistory = async (book_link: string) => {
     const sessionId = localStorage.getItem("userName");
     if (sessionId) {
@@ -38,7 +49,7 @@ export default function ChatLayout({
       } catch (error) {
         console.error("Error deleting chat history:", error);
       } finally {
-        fetchChatHistory(sessionId);
+        fetchChatHistory(sessionId, "chat");
       }
     }
   };

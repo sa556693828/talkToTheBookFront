@@ -15,7 +15,7 @@ export default function DSLogin() {
     try {
       const isOk = await login(username, username);
       if (isOk) {
-        router.push("/chat_ds");
+        router.push("/dschat");
       }
     } catch (error) {
       console.error(error);
@@ -25,7 +25,7 @@ export default function DSLogin() {
   useEffect(() => {
     const userName = localStorage.getItem("userName");
     if (userName) {
-      router.push("/chat_ds");
+      router.push("/dschat");
     }
   }, [isAuthenticated, user, router]);
 

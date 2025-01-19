@@ -9,7 +9,7 @@ export default function Header() {
 
   // 根據路徑決定標題
   const getTitle = () => {
-    if (pathname?.startsWith("/chat_ds")) {
+    if (pathname?.startsWith("/dschat")) {
       return "Talk To The Book D";
     } else if (pathname?.startsWith("/chat")) {
       return "Talk To The Book";

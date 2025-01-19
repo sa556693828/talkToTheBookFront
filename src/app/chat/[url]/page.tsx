@@ -2,8 +2,8 @@
 
 import { useEffect, use, useCallback, useState, useRef } from "react";
 import ChatComponent from "@/components/Chat";
-import { UserHistory } from "@/models/ChatHistory";
 import { useChatHistoryStore } from "@/store/chatHistoryStore";
+import { UserHistory } from "@/types";
 
 // 定義頁面參數類型
 
@@ -25,7 +25,6 @@ export default function ChatContent({
   const [isComposing, setIsComposing] = useState(false);
   const [getChatHistory, setGetChatHistory] = useState(false);
   const { fetchChatHistory } = useChatHistoryStore();
-  // const { isDeepSeek } = useModelStore();
   const isDeepSeek = false;
 
   const basicPrompt = [
@@ -70,9 +69,6 @@ export default function ChatContent({
         // 使用 component 的 isDeepSeek state 來決定 API 路徑
         const apiPath = isDeepSeek ? "/dschat" : "/chat";
         const apiUrl = `${baseUrl}${apiPath}`;
-
-        console.log("Using API URL:", apiUrl);
-        console.log("Is DeepSeek enabled:", isDeepSeek);
 
         const response = await fetch(apiUrl, {
           method: "POST",
@@ -209,7 +205,7 @@ export default function ChatContent({
         console.error("Stream error:", error);
         throw error;
       } finally {
-        fetchChatHistory(userName);
+        fetchChatHistory(userName, "chat");
         setIsStreaming(false);
       }
     },
@@ -281,10 +277,6 @@ export default function ChatContent({
       getChatHistory(sessionId);
     }
   }, [decodedUrl]);
-
-  useEffect(() => {
-    console.log("Current isDeepSeek value:", isDeepSeek);
-  }, [isDeepSeek]);
 
   return (
     <div className="text-black flex-1">

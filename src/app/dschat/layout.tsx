@@ -31,7 +31,7 @@ export default function ChatLayout({
         router.push("/"); // 導向登入頁面
         return;
       }
-      fetchChatHistory(sessionId);
+      fetchChatHistory(sessionId, "dschat");
     }
   }, [fetchChatHistory, router]);
 
@@ -39,9 +39,12 @@ export default function ChatLayout({
     const sessionId = localStorage.getItem("userName");
     if (sessionId) {
       try {
-        await fetch(`/api/chat?sessionId=${sessionId}&book_link=${book_link}`, {
-          method: "DELETE",
-        });
+        await fetch(
+          `/api/dschat?sessionId=${sessionId}&book_link=${book_link}`,
+          {
+            method: "DELETE",
+          }
+        );
         const encodedUrl = encodeURIComponent(book_link);
         if (pathname.includes(encodedUrl)) {
           router.push("/chat");
@@ -49,7 +52,7 @@ export default function ChatLayout({
       } catch (error) {
         console.error("Error deleting chat history:", error);
       } finally {
-        fetchChatHistory(sessionId);
+        fetchChatHistory(sessionId, "dschat");
       }
     }
   };
@@ -120,7 +123,7 @@ export default function ChatLayout({
             text-gray-300 hover:bg-gray-800 cursor-pointer group"
                 onClick={() => {
                   const encodedUrl = encodeURIComponent(chat.book_link);
-                  router.push(`/chat_ds/${encodedUrl}`);
+                  router.push(`/dschat/${encodedUrl}`);
                 }}
               >
                 <div className="flex items-center gap-2 overflow-hidden">

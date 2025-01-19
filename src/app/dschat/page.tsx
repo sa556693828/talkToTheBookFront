@@ -24,7 +24,7 @@ export default function ChatPage() {
 
     try {
       const encodedUrl = encodeURIComponent(url);
-      router.push(`/chat_ds/${encodedUrl}`);
+      router.push(`/dschat/${encodedUrl}`);
     } catch (error) {
       console.error("Error submitting URL:", error);
     } finally {

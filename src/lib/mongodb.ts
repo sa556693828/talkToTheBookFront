@@ -1,50 +1,31 @@
-import mongoose from "mongoose";
-
-// 定義緩存類型
-interface MongooseCache {
-  conn: typeof mongoose | null;
-  promise: Promise<typeof mongoose> | null;
-}
-
-// 定義全局類型
-declare global {
-  // eslint-disable-next-line no-var
-  var mongoose: MongooseCache | undefined; // 這裡需要使用 var
-}
+import { MongoClient } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
-  throw new Error("請在 .env 文件中添加 MONGODB_URI");
+  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI;
+const options = { appName: "MarketingAgents" };
 
-// 初始化緩存
-const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+let client: MongoClient;
 
-if (!global.mongoose) {
-  global.mongoose = cached;
+if (process.env.NODE_ENV === "development") {
+  // In development mode, use a global variable so that the value
+  // is preserved across module reloads caused by HMR (Hot Module Replacement).
+  const globalWithMongo = global as typeof globalThis & {
+    _mongoClient?: MongoClient;
+  };
+
+  if (!globalWithMongo._mongoClient) {
+    globalWithMongo._mongoClient = new MongoClient(uri, options);
+  }
+  client = globalWithMongo._mongoClient;
+} else {
+  // In production mode, it's best to not use a global variable.
+  client = new MongoClient(uri, options);
 }
 
-async function dbConnect(): Promise<typeof mongoose> {
-  if (cached.conn) {
-    return cached.conn;
-  }
+// Export a module-scoped MongoClient. By doing this in a
+// separate module, the client can be shared across functions.
 
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-    cached.promise = mongoose.connect(MONGODB_URI, opts);
-  }
-
-  try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
-  }
-
-  return cached.conn;
-}
-
-export default dbConnect;
+export default client;

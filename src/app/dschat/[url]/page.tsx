@@ -2,8 +2,8 @@
 
 import { useEffect, use, useCallback, useState, useRef } from "react";
 import ChatComponent from "@/components/Chat";
-import { UserHistory } from "@/models/ChatHistory";
 import { useChatHistoryStore } from "@/store/chatHistoryStore";
+import { UserHistory } from "@/types";
 
 // 定義頁面參數類型
 
@@ -209,7 +209,7 @@ export default function ChatContent({
         console.error("Stream error:", error);
         throw error;
       } finally {
-        fetchChatHistory(userName);
+        fetchChatHistory(userName, "dschat");
         setIsStreaming(false);
       }
     },
@@ -260,7 +260,7 @@ export default function ChatContent({
       try {
         setGetChatHistory(false);
         const response = await fetch(
-          `/api/chat?sessionId=${sessionId}&book_link=${decodedUrl}`
+          `/api/dschat?sessionId=${sessionId}&book_link=${decodedUrl}`
         );
         const data = await response.json();
         if (data.success) {
@@ -281,10 +281,6 @@ export default function ChatContent({
       getChatHistory(sessionId);
     }
   }, [decodedUrl]);
-
-  useEffect(() => {
-    console.log("Current isDeepSeek value:", isDeepSeek);
-  }, [isDeepSeek]);
 
   return (
     <div className="text-black flex-1">

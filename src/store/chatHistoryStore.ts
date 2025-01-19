@@ -9,16 +9,16 @@ interface ChatHistory {
 interface ChatHistoryState {
   chatHistory: ChatHistory[];
   isLoading: boolean;
-  fetchChatHistory: (sessionId: string) => Promise<void>;
+  fetchChatHistory: (sessionId: string, route: string) => Promise<void>;
 }
 
 export const useChatHistoryStore = create<ChatHistoryState>((set) => ({
   chatHistory: [],
   isLoading: false,
-  fetchChatHistory: async (sessionId: string) => {
+  fetchChatHistory: async (sessionId: string, route: string) => {
     try {
       set({ isLoading: true });
-      const response = await fetch(`/api/chat?sessionId=${sessionId}`);
+      const response = await fetch(`/api/${route}?sessionId=${sessionId}`);
       const data = await response.json();
       if (data.success) {
         set({ chatHistory: data.chatHistory || [] });

@@ -1,22 +1,25 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import ChatHistory from "@/models/ChatHistory";
+import clientPromise from "@/lib/mongodb";
 
 export async function GET(request: Request) {
   try {
-    await dbConnect();
+    const client = await clientPromise;
+    const db = client.db("MarketingAgents");
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get("sessionId");
     const book_link = searchParams.get("book_link") || undefined;
     // 測試查詢特定 SessionId
     let chatHistory;
     if (book_link) {
-      chatHistory = await ChatHistory.findOne({
+      chatHistory = await db.collection("user_history_tttb").findOne({
         SessionId: sessionId,
         book_link: book_link ? book_link : undefined,
       });
     } else {
-      chatHistory = await ChatHistory.find({ SessionId: sessionId });
+      chatHistory = await db
+        .collection("user_history_tttb")
+        .find({ SessionId: sessionId })
+        .toArray();
     }
 
     return NextResponse.json({
@@ -31,40 +34,10 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
-  try {
-    await dbConnect();
-    const body = await request.json();
-    const { sessionId, message } = body;
-
-    let chatHistory = await ChatHistory.findOne({ SessionId: sessionId });
-
-    if (!chatHistory) {
-      chatHistory = new ChatHistory({
-        SessionId: sessionId,
-        messages: [],
-      });
-    }
-
-    chatHistory.messages.push({
-      role: "human",
-      content: message,
-    });
-
-    await chatHistory.save();
-
-    return NextResponse.json({ success: true, data: chatHistory });
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, error: "保存聊天記錄失敗" + error },
-      { status: 500 }
-    );
-  }
-}
-
 export async function DELETE(request: Request) {
   try {
-    await dbConnect();
+    const client = await clientPromise;
+    const db = client.db("MarketingAgents");
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get("sessionId");
     const book_link = searchParams.get("book_link");
@@ -81,7 +54,7 @@ export async function DELETE(request: Request) {
       ...(book_link && { book_link }),
     };
 
-    const result = await ChatHistory.deleteOne(query);
+    const result = await db.collection("user_history_tttb").deleteOne(query);
 
     if (result.deletedCount === 0) {
       return NextResponse.json(

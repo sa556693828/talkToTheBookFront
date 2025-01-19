@@ -1,6 +1,6 @@
 "use client";
 
-import { UserHistory } from "@/models/ChatHistory";
+import { UserHistory } from "@/types";
 import { useEffect, useRef } from "react";
 import { IoLibrary } from "react-icons/io5";
 import ReactMarkdown from "react-markdown";
