@@ -21,14 +21,14 @@ export default function Home() {
 
       <div className="max-w-2xl mx-auto mt-12 p-6">
         <div className="p-8 bg-white/80 backdrop-blur flex flex-col gap-4">
-          <Link href="/4o">
-            <button className="w-full p-6 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xl transition-colors">
-              4O 系統
-            </button>
-          </Link>
           <Link href="/ds">
             <button className="w-full p-6 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xl transition-colors">
               DS 系統
+            </button>
+          </Link>
+          <Link href="/4o">
+            <button className="w-full p-6 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xl transition-colors">
+              4o 系統
             </button>
           </Link>
         </div>

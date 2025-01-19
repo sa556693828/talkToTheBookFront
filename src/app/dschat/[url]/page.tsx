@@ -113,17 +113,6 @@ export default function ChatContent({
           const { value, done } = await reader.read();
           if (done) break;
 
-          const decodedValue = decoder.decode(value);
-          console.log("Received chunk:", decodedValue);
-
-          try {
-            const jsonData = JSON.parse(decodedValue);
-            console.log("Parsed JSON:", jsonData);
-          } catch (e) {
-            console.log(e);
-            console.warn("Failed to parse as JSON:", decodedValue);
-          }
-
           buffer += decoder.decode(value, { stream: true });
 
           const lines = buffer.split("\n");
