@@ -47,7 +47,7 @@ export default function ChatLayout({
         );
         const encodedUrl = encodeURIComponent(book_link);
         if (pathname.includes(encodedUrl)) {
-          router.push("/chat");
+          router.push("/dschat");
         }
       } catch (error) {
         console.error("Error deleting chat history:", error);
