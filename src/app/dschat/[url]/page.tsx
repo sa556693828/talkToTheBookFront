@@ -16,7 +16,7 @@ export default function ChatContent({
   const decodedUrl = decodeURIComponent(resolvedParams.url);
   const [inputValue, setInputValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [, setIsStreaming] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [loading, setLoading] = useState(false);
   const [chatLog, setChatLog] = useState<UserHistory[]>([]);
   const [currentChat, setCurrentChat] = useState<UserHistory[]>([]);
@@ -306,6 +306,7 @@ export default function ChatContent({
           <div className="flex-1 overflow-y-auto mb-4">
             <ChatComponent
               loading={loading}
+              isStreaming={isStreaming}
               chatLog={chatLog}
               currentChat={currentChat}
               handleQuery={handleStream}
