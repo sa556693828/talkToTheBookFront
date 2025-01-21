@@ -16,7 +16,7 @@ export default function ChatContent({
   const decodedUrl = decodeURIComponent(resolvedParams.url);
   const [inputValue, setInputValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [, setIsStreaming] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [loading, setLoading] = useState(false);
   const [prompts, setPrompts] = useState<string[]>([]);
   const [chatLog, setChatLog] = useState<UserHistory[]>([]);
@@ -272,6 +272,7 @@ export default function ChatContent({
         {getChatHistory ? (
           <div className="flex-1 overflow-y-auto mb-4">
             <ChatComponent
+              isStreaming={isStreaming}
               loading={loading}
               chatLog={chatLog}
               currentChat={currentChat}
