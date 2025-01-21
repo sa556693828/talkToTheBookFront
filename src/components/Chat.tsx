@@ -34,7 +34,7 @@ export default function ChatComponent({
       ref={chatContainerRef}
       className="flex flex-col justify-start h-full pt-4 pb-20 px-2 gap-10 overflow-y-auto overflow-x-hidden scrollbar-hide"
     >
-      {chatLog.length === 0 && (
+      {chatLog.length === 0 && !loading && (
         <div className="flex px-4 gap-2 flex-col items-start justify-around ">
           <p className="text-sm text-gray-500">你可以從這些問題開始</p>
           {basicPrompt.map((prompt, index) => (
